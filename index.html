@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>English Grammar Mastery</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="brand-mark">Gr</span>
+      <span class="brand-name">Grammar Mastery</span>
+    </div>
+    <nav id="nav-list" class="nav-list"><!-- filled by JS --></nav>
+    <div class="sidebar-footer">
+      <button id="lookup-open-btn" class="ghost-btn lookup-btn">🔍 Look up any word</button>
+      <button id="reset-progress-btn" class="ghost-btn">Reset all progress</button>
+    </div>
+  </aside>
+
+  <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle menu">☰</button>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Home / Dashboard -->
+    <section id="view-home" class="view">
+      <header class="view-header">
+        <h1>English Grammar Mastery</h1>
+        <p class="subtitle">Every section below is a complete, self-contained reference: the core rules, exceptions,
+        and enough examples that you shouldn't need to look anywhere else. Read the <strong>Learn</strong> tab first,
+        then drill it into memory with the <strong>Practice</strong> tab, which adapts its difficulty to how you're doing.</p>
+      </header>
+      <div id="home-grid" class="home-grid"><!-- filled by JS --></div>
+    </section>
+
+    <!-- Section view -->
+    <section id="view-section" class="view" hidden>
+      <header class="view-header section-header">
+        <button class="back-btn" id="back-btn">&larr; All sections</button>
+        <h1 id="section-title"></h1>
+        <p class="subtitle" id="section-intro"></p>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="learn">Learn</button>
+          <button class="tab-btn" data-tab="practice">Practice</button>
+        </div>
+      </header>
+
+      <div id="tab-learn" class="tab-panel">
+        <div id="learn-content" class="learn-content"><!-- filled by JS --></div>
+      </div>
+
+      <div id="tab-practice" class="tab-panel" hidden>
+        <div class="practice-wrap">
+          <div class="practice-stats">
+            <div class="stat">
+              <span class="stat-label">Level</span>
+              <span class="stat-value" id="stat-level">1</span>
+              <div class="level-bar"><div id="level-bar-fill" class="level-bar-fill"></div></div>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Streak</span>
+              <span class="stat-value" id="stat-streak">0</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Answered</span>
+              <span class="stat-value" id="stat-answered">0</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Accuracy</span>
+              <span class="stat-value" id="stat-accuracy">–</span>
+            </div>
+          </div>
+
+          <div id="question-card" class="question-card">
+            <div class="q-meta">
+              <span id="q-level-badge" class="badge">Level 1</span>
+              <span id="q-type-badge" class="badge badge-muted">Multiple choice</span>
+              <span id="q-source-badge" class="badge badge-muted" hidden></span>
+            </div>
+            <p id="q-prompt" class="q-prompt"></p>
+            <div id="q-options" class="q-options"></div>
+            <div id="q-fill-wrap" class="q-fill-wrap" hidden>
+              <input id="q-fill-input" type="text" autocomplete="off" placeholder="Type your answer…" />
+            </div>
+            <div id="q-feedback" class="q-feedback" hidden></div>
+            <div class="q-actions">
+              <button id="check-btn" class="primary-btn">Check answer</button>
+              <button id="next-btn" class="primary-btn" hidden>Next question &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Word lookup modal (free, no-key dictionary API — needs internet, rest of the app doesn't) -->
+<div id="lookup-overlay" class="lookup-overlay" hidden>
+  <div class="lookup-modal">
+    <div class="lookup-header">
+      <h2>Look up any word</h2>
+      <button id="lookup-close-btn" class="lookup-close" aria-label="Close">✕</button>
+    </div>
+    <p class="lookup-sub">Free, unlimited definitions &amp; example sentences — powered by the open <a href="https://dictionaryapi.dev/" target="_blank" rel="noopener">Free Dictionary API</a>. Requires an internet connection.</p>
+    <form id="lookup-form" class="lookup-form">
+      <input id="lookup-input" type="text" placeholder="Type any English word…" autocomplete="off" />
+      <button type="submit" class="primary-btn">Search</button>
+    </form>
+    <div id="lookup-results" class="lookup-results"></div>
+  </div>
+</div>
+
+<script src="js/data-articles-nouns-pronouns.js"></script>
+<script src="js/data-prepositions-tenses-agreement.js"></script>
+<script src="js/data-modals-adjadv-conjunctions.js"></script>
+<script src="js/data-clauses-conditionals-passive.js"></script>
+<script src="js/data-reported-punctuation.js"></script>
+<script src="js/generators.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
