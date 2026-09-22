@@ -10,6 +10,33 @@
   const STORAGE_KEY = "grammarAppProgressV1";
   const MAX_LEVEL = 5;
 
+  // A distinct accent color per section, so the section list reads as
+  // colorful widget tiles rather than identical white cards. Chosen to
+  // stay legible as text/icon-badge colors and as soft card-wash tints.
+  const SECTION_ACCENT = {
+    "articles": "#4f46e5",
+    "nouns": "#2563eb",
+    "pronouns": "#0891b2",
+    "prepositions": "#0d9488",
+    "tenses": "#059669",
+    "agreement": "#65a30d",
+    "modals": "#d97706",
+    "adj-adv": "#ea580c",
+    "conjunctions": "#dc2626",
+    "clauses": "#db2777",
+    "conditionals": "#9333ea",
+    "passive": "#0284c7",
+    "reported-speech": "#7c3aed",
+    "punctuation": "#475569"
+  };
+  function sectionAccent(id) {
+    return SECTION_ACCENT[id] || "#3454d1";
+  }
+  function hexToRgb(hex) {
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return m ? `${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}` : "52, 84, 209";
+  }
+
   // ---- state ----
   let sections = [];
   let currentSectionId = null;
@@ -163,10 +190,14 @@
     nav.innerHTML = "";
     sections.forEach((s, i) => {
       const prog = getSectionProgress(s.id);
+      const accent = sectionAccent(s.id);
       const item = document.createElement("div");
       item.className = "nav-item" + (s.id === currentSectionId ? " active" : "");
+      item.style.setProperty("--accent", accent);
+      item.style.setProperty("--accent-rgb", hexToRgb(accent));
       item.innerHTML = `
         <span style="display:flex;align-items:center;gap:8px;">
+          <span class="nav-dot"></span>
           <span class="nav-num">${String(i + 1).padStart(2, "0")}</span>
           <span>${s.icon || ""} ${s.title}</span>
         </span>
@@ -185,14 +216,16 @@
       const prog = getSectionProgress(s.id);
       const pct = Math.round((prog.level - 1) / (MAX_LEVEL - 1) * 100);
       const acc = prog.answered ? Math.round((prog.correct / prog.answered) * 100) : null;
+      const accent = sectionAccent(s.id);
       const card = document.createElement("div");
       card.className = "home-card";
+      card.style.setProperty("--accent", accent);
+      card.style.setProperty("--accent-rgb", hexToRgb(accent));
       card.innerHTML = `
         <div class="home-card-top">
-          <div>
-            <h3>${s.icon || ""} ${s.title}</h3>
-          </div>
+          <span class="home-icon-badge">${s.icon || ""}</span>
         </div>
+        <h3>${s.title}</h3>
         <p>${s.shortDesc}</p>
         <div class="home-progress"><div class="home-progress-fill" style="width:${pct}%"></div></div>
         <div class="home-meta">
@@ -224,6 +257,12 @@
     document.getElementById("view-section").hidden = false;
     document.getElementById("sidebar").classList.remove("open");
 
+    const headerAccent = sectionAccent(section.id);
+    const headerEl = document.querySelector(".section-header");
+    if (headerEl) {
+      headerEl.style.setProperty("--accent", headerAccent);
+      headerEl.style.setProperty("--accent-rgb", hexToRgb(headerAccent));
+    }
     document.getElementById("section-title").textContent = `${section.icon || ""} ${section.title}`;
     document.getElementById("section-intro").textContent = section.intro;
 
