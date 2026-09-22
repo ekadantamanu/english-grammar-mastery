@@ -277,7 +277,54 @@
       wrap.appendChild(box);
     }
 
+    const extra = buildExtraStudyBlock(section);
+    if (extra) wrap.appendChild(extra);
     wrap.appendChild(buildGoDeeperBlock(section));
+  }
+
+
+  // Extra in-depth study material (js/data-extra-study.js): curated external
+  // references plus confusable-word notes and worked examples from NativeEnglish.
+  function buildExtraStudyBlock(section) {
+    const data = window.EXTRA_STUDY && window.EXTRA_STUDY[section.id];
+    if (!data) return null;
+    const e = escapeHtml;
+    const box = document.createElement("div");
+    box.className = "rule-block extra-study-block";
+    let html = `<h3><span class="rule-num">+</span> In-depth study resources</h3>`;
+    if (data.resources && data.resources.length) {
+      html += `<div class="resources-grid">`;
+      data.resources.forEach((r) => {
+        html += `<a class="resource-card" href="${e(r.url)}" target="_blank" rel="noopener">
+          <span class="resource-source">${e(r.source)}</span>
+          <span class="resource-title">${e(r.title)}</span>
+          <span class="resource-desc">${e(r.desc)}</span></a>`;
+      });
+      html += `</div>`;
+    }
+    if (data.confusions && data.confusions.length) {
+      html += `<details class="study-details"><summary>Commonly confused in this topic (${data.confusions.length})</summary>`;
+      data.confusions.forEach((c) => {
+        html += `<div class="confusion-item"><div class="confusion-pair">${e(c.a)} <span>vs</span> ${e(c.b)}</div>
+          <div class="confusion-rule">${e(c.rule)}</div>
+          <div class="confusion-tip">💡 ${e(c.tip)}</div>
+          <ul class="example-list">${c.examples.map((x) => `<li>${e(x.text)}<span class="ex-note">${e(x.note)}</span></li>`).join("")}</ul></div>`;
+      });
+      html += `</details>`;
+    }
+    if (data.worked && data.worked.length) {
+      html += `<details class="study-details"><summary>Worked examples (${data.worked.length})</summary>`;
+      data.worked.forEach((w) => {
+        html += `<div class="confusion-item"><div class="confusion-pair">${e(w.title)} <span>${e(w.kind)} · ${e(w.level)}</span></div>
+          <div class="worked-task">${e(w.task)}</div>
+          <div class="confusion-tip">💡 ${e(w.tip)}</div>
+          <details class="worked-answer"><summary>Show answer</summary><div class="worked-task">${e(w.answer)}</div></details></div>`;
+      });
+      html += `</details>`;
+    }
+    html += `<p class="study-credit">Confusable-word notes and worked examples adapted from <a href="https://nativeenglish.fyi" target="_blank" rel="noopener">NativeEnglish</a>. External links open in a new tab.</p>`;
+    box.innerHTML = html;
+    return box;
   }
 
   // Free, unlimited "go deeper" links — a live search scoped to trusted grammar
