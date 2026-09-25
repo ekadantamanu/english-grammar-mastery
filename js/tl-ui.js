@@ -31,7 +31,7 @@
           if (/perfect-continuous/.test(t.id) && !vp.d) return;
           if (vp.n && /continuous/.test(t.id)) return;
           let advs = GEN.ADV[t.id] ? GEN.ADV[t.id].length : t.id === "past-perfect-continuous" ? 30 : 6;
-          total += subjects * advs;
+          total += subjects * advs * GEN.countExtras(d, vp);
         });
       });
     });

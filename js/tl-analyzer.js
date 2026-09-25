@@ -21,6 +21,7 @@
   function capsDict() {
     if (capsDict.d) return capsDict.d;
     const d = Object.assign({}, ALWAYS_CAP);
+    (TL.GEN.CAP_WORDS || []).forEach((w) => (d[w.toLowerCase()] = w));
     Object.values(TL.GEN.PERSONAL).forEach((p) => { if (/^[A-Z]/.test(p.en) && p.en !== "I") d[p.en.toLowerCase()] = p.en; });
     capsDict.d = d; return d;
   }
@@ -259,6 +260,10 @@
     } else if (!v) {
       add("major", "meaning", "No verb found", `I couldn't find a main verb. The Telugu verb here means "${sp.vp.e}".`, sp.vp.e, 20);
     }
+    const detailMissing = sp.req.filter((r) => r.kind === "detail" && !groupPresent(tokens, joined, r.words));
+    if (detailMissing.length) {
+      add("minor", "meaning", "Detail left out", `"${detailMissing[0].te}" means "${detailMissing[0].en}". Keep every detail of the Telugu sentence in your translation.`, detailMissing[0].en, 5);
+    }
     const objMissing = sp.req.filter((r) => r.kind === "object" && !groupPresent(tokens, joined, r.words));
     if (objMissing.length) {
       add("minor", "meaning", "Part of the meaning is missing", `For "${objMissing[0].te}" I expected a word like "${objMissing[0].words.slice(0, 3).join(" / ")}".`, sp.vp.t, 6 * Math.min(objMissing.length, 2));
@@ -297,7 +302,7 @@
     if (res.verdict === "excellent" || res.verdict === "perfect") res.score = Math.max(res.score, 92);
 
     // ---- corrected version ----
-    res.corrected = buildCorrection(res, sp, tokens, v, cls, lf, person, missingTime, objMissing, subj);
+    res.corrected = buildCorrection(res, sp, tokens, v, cls, lf, person, missingTime.concat(detailMissing), objMissing, subj);
     res.why = explainWhy(res, sp, verbTok, learnerGroupTxt, correctGroupTxt);
     return res;
   }
