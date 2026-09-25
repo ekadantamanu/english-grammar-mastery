@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>English Grammar Mastery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;500;600&display=swap" />
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -48,11 +50,16 @@
         <div class="tabs">
           <button class="tab-btn active" data-tab="learn">Learn</button>
           <button class="tab-btn" data-tab="practice">Practice</button>
+          <button class="tab-btn" data-tab="lab" id="lab-tab-btn" hidden>Telugu → English Lab</button>
         </div>
       </header>
 
       <div id="tab-learn" class="tab-panel">
         <div id="learn-content" class="learn-content"><!-- filled by JS --></div>
+      </div>
+
+      <div id="tab-lab" class="tab-panel" hidden>
+        <div id="lab-root"><!-- Translation Lab, filled by js/tl-ui.js --></div>
       </div>
 
       <div id="tab-practice" class="tab-panel" hidden>
@@ -124,6 +131,10 @@
 <script src="js/data-reported-punctuation.js"></script>
 <script src="js/data-extra-study.js"></script>
 <script src="js/generators.js"></script>
+<script src="js/tl-english.js"></script>
+<script src="js/tl-content.js"></script>
+<script src="js/tl-analyzer.js"></script>
+<script src="js/tl-ui.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

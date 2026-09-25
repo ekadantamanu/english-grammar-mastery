@@ -263,6 +263,7 @@
       headerEl.style.setProperty("--accent", headerAccent);
       headerEl.style.setProperty("--accent-rgb", hexToRgb(headerAccent));
     }
+    document.getElementById("lab-tab-btn").hidden = section.id !== "tenses";
     document.getElementById("section-title").textContent = `${section.icon || ""} ${section.title}`;
     document.getElementById("section-intro").textContent = section.intro;
 
@@ -276,6 +277,8 @@
     document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
     document.getElementById("tab-learn").hidden = tab !== "learn";
     document.getElementById("tab-practice").hidden = tab !== "practice";
+    document.getElementById("tab-lab").hidden = tab !== "lab";
+    if (tab === "lab" && window.TL && window.TL.UI) window.TL.UI.mount(document.getElementById("lab-root"));
     if (tab === "practice") {
       refreshStats();
       loadNextQuestion();
@@ -285,6 +288,16 @@
   function renderLearn(section) {
     const wrap = document.getElementById("learn-content");
     wrap.innerHTML = "";
+
+    if (section.id === "tenses") {
+      const banner = document.createElement("div");
+      banner.className = "lab-banner";
+      banner.innerHTML = `<div><h3>New: Telugu → English Translation Lab</h3>
+        <p>Translate unlimited Telugu passages in any of the 12 tenses and get a detailed check of every sentence. It's free and runs offline.</p></div>
+        <button type="button">Open the Lab →</button>`;
+      banner.querySelector("button").addEventListener("click", () => { switchTab("lab"); window.scrollTo(0, 0); });
+      wrap.appendChild(banner);
+    }
 
     section.rules.forEach((rule, idx) => {
       const block = document.createElement("div");
