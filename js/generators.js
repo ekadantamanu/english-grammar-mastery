@@ -171,19 +171,28 @@
   // for pronouns/common-noun phrases, still capitalized for real proper nouns);
   // obj = correct object-case form for use after a preposition ("by ___").
   const SUBJECTS = [
-    { text: "I", lc: "I", obj: "me", per: 1, num: "sing" },
-    { text: "You", lc: "you", obj: "you", per: 2, num: "sing" },
-    { text: "He", lc: "he", obj: "him", per: 3, num: "sing" },
-    { text: "She", lc: "she", obj: "her", per: 3, num: "sing" },
-    { text: "We", lc: "we", obj: "us", per: 1, num: "plur" },
-    { text: "They", lc: "they", obj: "them", per: 3, num: "plur" },
-    { text: "Tom", lc: "Tom", obj: "Tom", per: 3, num: "sing" },
-    { text: "Maria", lc: "Maria", obj: "Maria", per: 3, num: "sing" },
-    { text: "My brother", lc: "my brother", obj: "my brother", per: 3, num: "sing" },
-    { text: "The students", lc: "the students", obj: "the students", per: 3, num: "plur" },
-    { text: "My parents", lc: "my parents", obj: "my parents", per: 3, num: "plur" },
-    { text: "The manager", lc: "the manager", obj: "the manager", per: 3, num: "sing" }
+    { text: "I", lc: "I", obj: "me", poss: "my", per: 1, num: "sing" },
+    { text: "You", lc: "you", obj: "you", poss: "your", per: 2, num: "sing" },
+    { text: "He", lc: "he", obj: "him", poss: "his", per: 3, num: "sing" },
+    { text: "She", lc: "she", obj: "her", poss: "her", per: 3, num: "sing" },
+    { text: "We", lc: "we", obj: "us", poss: "our", per: 1, num: "plur" },
+    { text: "They", lc: "they", obj: "them", poss: "their", per: 3, num: "plur" },
+    { text: "Tom", lc: "Tom", obj: "Tom", poss: "his", per: 3, num: "sing" },
+    { text: "Maria", lc: "Maria", obj: "Maria", poss: "her", per: 3, num: "sing" },
+    { text: "My brother", lc: "my brother", obj: "my brother", poss: "his", per: 3, num: "sing" },
+    { text: "The students", lc: "the students", obj: "the students", poss: "their", per: 3, num: "plur" },
+    { text: "My parents", lc: "my parents", obj: "my parents", poss: "their", per: 3, num: "plur" },
+    { text: "The manager", lc: "the manager", obj: "the manager", poss: "their", per: 3, num: "sing" }
   ];
+
+  // Object phrases carry a his/her possessive ("his mother"); make it match the subject
+  // so prompts never read "Maria calls his mother". "her" as an object pronoun ("give her a gift") is left alone.
+  function fitObj(obj, subj) {
+    if (!obj || !subj || !subj.poss) return obj;
+    return obj.replace(/\b(?:his|her)\s+(?!(?:a|an|the)\b)/g, subj.poss + " ");
+  }
+  // "___ (call)" — tells the learner which verb to put in the blank, so only the form is being tested
+  function hint(vKey) { return "___ (" + vKey + ")"; }
 
   function beForm(subj, time) {
     if (time === "pres") {
@@ -423,12 +432,13 @@
   ];
   function genAgreement(level) {
     const subj = randChoice(AGREEMENT_SUBJECTS);
-    const vKey = randChoice(VERB_KEYS.filter((k) => OBJECTS[k] !== undefined));
+    // skip objects with a gendered possessive ("his mother") — they clash with subjects like "The committee"
+    const vKey = randChoice(VERB_KEYS.filter((k) => OBJECTS[k] !== undefined && !/\b(his|her)\s+(?!(a|an|the)\b)/.test(OBJECTS[k])));
     const v = verbInfo(vKey);
     const correct = subj.num === "sing" ? v.s : vKey;
     const wrong = subj.num === "sing" ? vKey : v.s;
     const obj = OBJECTS[vKey] || "";
-    const prompt = `${subj.text} ${level >= 4 ? "usually" : ""} ___ ${obj}.`.replace(/\s+/g, " ").trim();
+    const prompt = `${subj.text} ${level >= 4 ? "usually" : ""} ${hint(vKey)} ${obj}.`.replace(/\s+/g, " ").trim();
     const type = Math.random() < 0.5 ? "fill" : "mcq";
     const explanationCorrect = ` ${subj.reason} So the verb must be "${correct}."`;
     const q = { id: uid("gen-agr"), level, type, prompt, answer: correct, explanationCorrect, explanationWrong: explanationCorrect };
@@ -440,16 +450,19 @@
   }
 
   /* ---------------- VERB TENSES ---------------- */
+  // State verbs (like, want, know…) are not used in continuous tenses — "I am liking this song" is wrong.
+  const STATIVE = new Set(["love", "like", "want", "need", "believe", "prefer", "remember", "know", "understand", "hate", "own", "belong", "seem", "mean"]);
+  const CONTINUOUS = new Set(["presCont", "pastCont", "presPerfectCont"]);
   function genTenses(level) {
     const pool = LEVEL_TENSES[Math.min(5, Math.max(1, level))];
     const tense = randChoice(pool);
-    const vKey = randChoice(VERB_KEYS);
+    const vKey = randChoice(CONTINUOUS.has(tense) ? VERB_KEYS.filter((k) => !STATIVE.has(k)) : VERB_KEYS);
     const subj = randChoice(SUBJECTS);
     const adverbial = randChoice(TENSE_ADVERBIALS[tense]);
-    const obj = OBJECTS[vKey] !== undefined ? OBJECTS[vKey] : "";
+    const obj = fitObj(OBJECTS[vKey] !== undefined ? OBJECTS[vKey] : "", subj);
     const correct = conj(vKey, tense, subj);
-    const promptParts = [subj.text, "___", obj, adverbial].filter(Boolean);
-    const prompt = promptParts.join(" ") + ".";
+    const promptParts = [subj.text, hint(vKey), obj, adverbial].filter(Boolean);
+    const prompt = promptParts.join(" ").replace(/\.$/, "") + ".";
     const type = Math.random() < 0.65 ? "mcq" : "fill";
     const explanationCorrect = ` "${adverbial}" is a classic signal for the ${TENSE_LABEL[tense]}, formed with ${TENSE_FORMULA[tense]}: "${correct}."`;
     const q = { id: uid("gen-tns"), level, type, prompt, answer: correct, explanationCorrect, explanationWrong: explanationCorrect + ` The correct form here is "${correct}."` };
@@ -541,33 +554,33 @@
     const subj = randChoice(SUBJECTS);
     const condVerb = randChoice(VERB_KEYS);
     const resultVerb = randChoice(VERB_KEYS.filter((k) => k !== condVerb));
-    const condObj = OBJECTS[condVerb] || "";
-    const resultObj = OBJECTS[resultVerb] || "";
+    const condObj = fitObj(OBJECTS[condVerb] || "", subj);
+    const resultObj = fitObj(OBJECTS[resultVerb] || "", subj);
     let ifClause, resultClause, correct, formula;
     if (ctype === "zero") {
       ifClause = `If ${subj.lc} ${conj(condVerb, "presSimple", subj)} ${condObj}`.trim();
       correct = conj(resultVerb, "presSimple", subj);
-      resultClause = `${subj.lc} ___ ${resultObj}`.trim();
+      resultClause = `${subj.lc} ${hint(resultVerb)} ${resultObj}`.trim();
       formula = "present simple in both clauses (a general truth)";
     } else if (ctype === "first") {
       ifClause = `If ${subj.lc} ${conj(condVerb, "presSimple", subj)} ${condObj}`.trim();
       correct = "will " + resultVerb;
-      resultClause = `${subj.lc} ___ ${resultObj}`.trim();
+      resultClause = `${subj.lc} ${hint(resultVerb)} ${resultObj}`.trim();
       formula = 'present simple in the if-clause, "will + base verb" in the result clause';
     } else if (ctype === "second") {
       ifClause = `If ${subj.lc} ${conj(condVerb, "pastSimple", subj)} ${condObj}`.trim();
       correct = "would " + resultVerb;
-      resultClause = `${subj.lc} ___ ${resultObj}`.trim();
+      resultClause = `${subj.lc} ${hint(resultVerb)} ${resultObj}`.trim();
       formula = '"if + past simple," "would + base verb" for a hypothetical situation';
     } else if (ctype === "third") {
       ifClause = `If ${subj.lc} had ${verbInfo(condVerb).pp} ${condObj}`.trim();
       correct = "would have " + verbInfo(resultVerb).pp;
-      resultClause = `${subj.lc} ___ ${resultObj}`.trim();
+      resultClause = `${subj.lc} ${hint(resultVerb)} ${resultObj}`.trim();
       formula = '"if + past perfect," "would have + past participle" for an unreal past';
     } else {
       ifClause = `If ${subj.lc} had ${verbInfo(condVerb).pp} ${condObj}`.trim();
       correct = "would " + resultVerb;
-      resultClause = `${subj.lc} ___ ${resultObj} now`.trim();
+      resultClause = `${subj.lc} ${hint(resultVerb)} ${resultObj} now`.trim();
       formula = "a past condition (had + past participle) combined with a present result (would + base verb) — a mixed conditional";
     }
     const prompt = `${ifClause}, ${resultClause.replace(/\s+/g, " ")}.`.replace(/\s+/g, " ");
